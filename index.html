@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026, 덴마크</title>
+
+    <!-- Tailwind CSS for basic structure -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Poppins Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        
+        /* Blurred background image */
+        .background-image-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1589923135233-045d1b5163a3?q=80&w=1974&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) grayscale(30%);
+            transform: scale(1.1);
+            z-index: -1;
+        }
+
+        /* Main container */
+        .content-wrapper {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.75rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* Party input cards */
+        .party-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .party-card {
+            width: 100%;
+            height: 130px;
+            border-radius: 12px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: 600;
+        }
+
+        .party-card input {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            width: 70px;
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 0.25rem 0;
+            border-radius: 4px;
+            border: none;
+            padding: 4px;
+            color: rgba(255, 255, 255, 0.9);
+            background-color: transparent;
+            border-bottom: 2px solid rgba(255,255,255,0.5);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .party-card input:focus {
+            color: white;
+            border-bottom-color: white;
+            outline: none;
+        }
+        
+        .party-card small {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            line-height: 1.2;
+            font-weight: 400;
+        }
+
+        /* Calculate Button */
+        .calculate-button {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.25rem;
+            background: #C8102E; /* Social Democrats Red */
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .calculate-button:hover {
+            background: #a20c24;
+        }
+
+        /* Results Section */
+        .results-container {
+            margin-top: 2.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            visibility: hidden;
+        }
+        .results-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .seat-projection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .projection-party-card {
+            width: 100%;
+            height: 120px;
+            border-radius: 12px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+        }
+
+        .projection-party-name { font-size: 1.1em; margin-bottom: 5px; }
+        .projection-seats { font-size: 2.5em; line-height: 1; font-weight: 800; }
+
+        /* Bar Chart */
+        .seat-bar-container {
+            width: 100%;
+            height: 30px;
+            background-color: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 2rem;
+            display: flex;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        .seat-bar-segment {
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-image-blur"></div>
+    <div class="content-wrapper">
+        <h2>🗳️ 2026, 덴마크</h2>
+
+        <div class="party-grid" id="partyGrid">
+            <!-- Party input cards will be rendered here by JS -->
+        </div>
+
+        <button class="calculate-button" onclick="runPrediction()">결과 계산</button>
+
+        <div id="resultsContainer" class="results-container">
+            <h2 id="resultsTitle" style="font-size: 1.5rem;">예상 의석수 (총 179석)</h2>
+            <div class="seat-projection-grid" id="seatProjectionGrid"></div>
+            <div class="seat-bar-container" id="seatBarContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const PARTIES = {
+            'a': { name: '사회민주당', color: '#C8102E' },
+            'v': { name: '좌파당', color: '#004A80' },
+            'm': { name: '온건당', color: '#A57EDC' },
+            'f': { name: '사회인민당', color: '#E35298' },
+            'ae': { name: '덴마크 민주당', color: '#458BFF' },
+            'i': { name: '자유동맹', color: '#00A8A8' },
+            'c': { name: '보수 인민당', color: '#00664F' },
+            'oe': { name: '적녹동맹', color: '#F07818' },
+            'b': { name: '사회자유당', color: '#702F8A' },
+            'aa': { name: '대안당', color: '#00FF00' },
+            'o': { name: '덴마크 인민당', color: '#FFD700' },
+            'h': { name: '시민', color: '#00AEEF' },
+            'oth': { name: '기타 (페로/그린란드)', color: '#8D8D8D' }
+        };
+        
+        const DENMARK_SEATS = 175;
+        const OVERSEAS_SEATS = 4;
+        const TOTAL_SEATS = DENMARK_SEATS + OVERSEAS_SEATS; // 179
+        const ELECTION_THRESHOLD = 2.0; // 2%
+
+        // Based on provided image
+        const INITIAL_VOTE_SHARES = { 
+            a: 22.4, 
+            v: 11.0, 
+            m: 4.0, 
+            f: 13.0, 
+            ae: 8.7,
+            i: 13.1,
+            c: 6.2,
+            oe: 7.0,
+            b: 4.3,
+            aa: 1.9,
+            o: 5.8,
+            h: 2.5
+        };
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPartyCards();
+        });
+
+        // --- UI SETUP ---
+        function renderPartyCards() {
+            const grid = document.getElementById("partyGrid");
+            grid.innerHTML = "";
+            Object.keys(INITIAL_VOTE_SHARES).forEach(key => {
+                const party = PARTIES[key];
+                const card = document.createElement("div");
+                card.className = "party-card";
+                card.style.backgroundColor = party.color;
+                
+                if (['o', 'aa'].includes(key)) {
+                    card.style.color = '#333';
+                    card.innerHTML = `<div>${party.name}</div><input type="number" id="${key}-vote" value="${INITIAL_VOTE_SHARES[key]}" step="0.1" style="color: #333; border-bottom-color: rgba(0,0,0,0.4);"><small>정당 득표율(%)</small>`;
+                } else {
+                    card.innerHTML = `<div>${party.name}</div><input type="number" id="${key}-vote" value="${INITIAL_VOTE_SHARES[key]}" step="0.1"><small>정당 득표율(%)</small>`;
+                }
+                grid.appendChild(card);
+            });
+        }
+        
+        function allocateSeats(voteShares, numSeats) {
+            const seats = {};
+            const remainders = {};
+            let allocatedSeats = 0;
+            const totalVotes = Object.values(voteShares).reduce((a, b) => a + b, 0);
+
+            if (totalVotes === 0) return seats;
+
+            Object.keys(voteShares).forEach(key => {
+                const exactSeats = (voteShares[key] / totalVotes) * numSeats;
+                seats[key] = Math.floor(exactSeats);
+                remainders[key] = exactSeats - seats[key];
+                allocatedSeats += seats[key];
+            });
+
+            let remainingSeats = numSeats - allocatedSeats;
+            if (remainingSeats > 0) {
+                const sortedRemainders = Object.keys(remainders).sort((a, b) => remainders[b] - remainders[a]);
+                for (let i = 0; i < remainingSeats; i++) {
+                    seats[sortedRemainders[i]]++;
+                }
+            }
+            return seats;
+        }
+
+        // --- CORE LOGIC & UI UPDATE ---
+        function runPrediction() {
+            const currentShares = {};
+            Object.keys(INITIAL_VOTE_SHARES).forEach(key => {
+                currentShares[key] = parseFloat(document.getElementById(`${key}-vote`).value) || 0;
+            });
+
+            const finalSeats = {};
+            Object.keys(PARTIES).forEach(key => { finalSeats[key] = 0; });
+
+            // --- Step 1: Allocate Denmark's 175 seats ---
+            // Filter for parties that meet the 2% threshold for levelling seats
+            const eligibleParties = {};
+            Object.keys(currentShares).forEach(key => {
+                if (currentShares[key] >= ELECTION_THRESHOLD) {
+                    eligibleParties[key] = currentShares[key];
+                }
+            });
+            
+            // The Danish system is complex. This model simplifies it by allocating all 175 seats proportionally
+            // among eligible parties, which approximates the final outcome of constituency + levelling seats.
+            const denmarkSeats = allocateSeats(eligibleParties, DENMARK_SEATS);
+            Object.keys(denmarkSeats).forEach(key => {
+                finalSeats[key] += denmarkSeats[key];
+            });
+
+            // --- Step 2: Add fixed overseas seats ---
+            finalSeats['oth'] = OVERSEAS_SEATS;
+
+            // --- Step 3: Update UI ---
+            const resultsContainer = document.getElementById('resultsContainer');
+            const seatProjectionGrid = document.getElementById('seatProjectionGrid');
+            const seatBarContainer = document.getElementById('seatBarContainer');
+            seatProjectionGrid.innerHTML = '';
+            seatBarContainer.innerHTML = '';
+
+            const sortedParties = Object.keys(finalSeats).sort((a,b) => finalSeats[b] - finalSeats[a]);
+
+            sortedParties.forEach(key => {
+                const party = PARTIES[key];
+                const seats = finalSeats[key];
+                if (seats === 0) return;
+                
+                const resultCard = document.createElement("div");
+                resultCard.className = "projection-party-card";
+                resultCard.style.backgroundColor = party.color;
+                if (['o', 'aa'].includes(key)) resultCard.style.color = '#333';
+
+                resultCard.innerHTML = `<div class="projection-party-name">${party.name}</div><div class="projection-seats">${seats}</div>`;
+                seatProjectionGrid.appendChild(resultCard);
+
+                const segment = document.createElement('div');
+                segment.className = 'seat-bar-segment';
+                segment.style.backgroundColor = party.color;
+                segment.style.width = `${(seats / TOTAL_SEATS) * 100}%`;
+                
+                seatBarContainer.appendChild(segment);
+            });
+            
+            resultsContainer.classList.add('visible');
+        }
+    </script>
+</body>
+</html>
